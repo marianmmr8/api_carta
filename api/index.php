@@ -14,12 +14,7 @@ $partes  = explode('/', trim(substr($camino, strlen($base)), '/'));     // ['pla
 $recurso = $partes[0];                                                  // 'platos'
 $id      = $partes[1] ?? null;                                          // '3' o null
 
-// 2. Las operaciones que cambian datos (las «no seguras») exigen la clave
-if (!in_array($metodo, ['GET', 'HEAD', 'OPTIONS'], true)) {
-    exigirClave($config['clave_api']);
-}
-
-// 3. Reparto: cada ruta, a su función
+// 2. Reparto: cada ruta, a su función
 if ($recurso === '' || $recurso === 'index.php') {
     responder(200, ['api' => 'La carta de La Alacena', 'version' => '1.0']);
 }
@@ -27,6 +22,10 @@ if ($recurso === '' || $recurso === 'index.php') {
 $pdo = conectar($config);
 
 if ($recurso === 'platos' && count($partes) === 1) {
+    if ($metodo === 'POST') {
+        exigirClave($config['clave_api']);
+    }
+
     match ($metodo) {
         'GET'   => listarPlatos($pdo),
         'POST'  => crearPlato($pdo, $base),
@@ -35,6 +34,10 @@ if ($recurso === 'platos' && count($partes) === 1) {
 }
 
 if ($recurso === 'platos' && count($partes) === 2 && ctype_digit($id)) {
+    if (in_array($metodo, ['PUT', 'DELETE'], true)) {
+        exigirClave($config['clave_api']);
+    }
+
     match ($metodo) {
         'GET'    => verPlato($pdo, (int) $id),
         'PUT'    => sustituirPlato($pdo, (int) $id),

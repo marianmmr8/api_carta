@@ -31,16 +31,30 @@ function metodoNoPermitido(string $permitidos): never
 /** Devuelve el cuerpo de la petición como array. Si no es un objeto JSON, responde 400. */
 function leerJson(): array
 {
-    $datos = json_decode(file_get_contents('php://input'), true);
-    if (!is_array($datos)) {
+    $datos = json_decode(file_get_contents('php://input'));
+    if (!$datos instanceof stdClass) {
         error(400, 'El cuerpo debe ser un objeto JSON válido');
     }
-    return $datos;
+    return get_object_vars($datos);
 }
 /** Corta la petición con un 401 si no trae la cabecera Authorization: Bearer <clave>. */
 function exigirClave(string $claveApi): void
 {
     $cabecera = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+
+    if ($cabecera === '' && function_exists('getallheaders')) {
+        $cabeceras = getallheaders();
+        if (is_array($cabeceras)) {
+            foreach ($cabeceras as $nombre => $valor) {
+                if (strcasecmp($nombre, 'Authorization') === 0 && is_string($valor)) {
+                    $cabecera = $valor;
+                    break;
+                }
+            }
+        }
+    }
+
+    $cabecera = trim($cabecera);
 
     if (!hash_equals('Bearer ' . $claveApi, $cabecera)) {
         header('WWW-Authenticate: Bearer');
