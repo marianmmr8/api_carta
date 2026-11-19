@@ -28,72 +28,22 @@ function buscarPlato(PDO $pdo, int $id): array
     return plato($fila);
 }
 
-/** GET /platos con filtros opcionales y paginación */
+/** GET /platos  y  GET /platos?categoria=postre */
 function listarPlatos(PDO $pdo): never
 {
     $categoria = $_GET['categoria'] ?? '';
-    $buscar = $_GET['buscar'] ?? '';
 
     if ($categoria === '') {
-        $categoria = '';
-    } elseif (!is_string($categoria) || !in_array($categoria, CATEGORIAS, true)) {
-        error(400, 'La categoría debe ser entrante, principal o postre');
-    }
-
-    if (!is_string($buscar)) {
-        error(400, 'El parámetro buscar debe ser texto');
-    }
-    $buscar = trim($buscar);
-
-    $condiciones = [];
-    $parametros = [];
-    if ($categoria !== '') {
-        $condiciones[] = 'categoria = ?';
-        $parametros[] = $categoria;
-    }
-    if ($buscar !== '') {
-        $condiciones[] = 'nombre LIKE ?';
-        $parametros[] = '%' . $buscar . '%';
-    }
-
-    $where = $condiciones ? ' WHERE ' . implode(' AND ', $condiciones) : '';
-    $conteo = $pdo->prepare('SELECT COUNT(*) FROM platos' . $where);
-    $conteo->execute($parametros);
-    $total = (int) $conteo->fetchColumn();
-    header("X-Total: $total");
-
-    $sql = 'SELECT * FROM platos' . $where . ' ORDER BY id';
-    $hayPaginacion = array_key_exists('pagina', $_GET) || array_key_exists('por_pagina', $_GET);
-    if ($hayPaginacion) {
-        $pagina = enteroConsulta('pagina', 1);
-        $porPagina = enteroConsulta('por_pagina', 10, 100);
-        if ($pagina > intdiv(PHP_INT_MAX, $porPagina)) {
-            error(400, 'La página solicitada está fuera de rango');
+        $consulta = $pdo->query('SELECT * FROM platos ORDER BY id');
+    } else {
+        if (!in_array($categoria, CATEGORIAS, true)) {
+            error(400, 'La categoría debe ser entrante, principal o postre');
         }
-        $offset = ($pagina - 1) * $porPagina;
-        $sql .= " LIMIT $porPagina OFFSET $offset";
+        $consulta = $pdo->prepare('SELECT * FROM platos WHERE categoria = ? ORDER BY id');
+        $consulta->execute([$categoria]);
     }
 
-    $consulta = $pdo->prepare($sql);
-    $consulta->execute($parametros);
     responder(200, array_map('plato', $consulta->fetchAll()));
-}
-
-/** Valida un parámetro de paginación entero y positivo. */
-function enteroConsulta(string $nombre, int $defecto, ?int $maximo = null): int
-{
-    if (!array_key_exists($nombre, $_GET)) {
-        return $defecto;
-    }
-
-    $valor = $_GET[$nombre];
-    $entero = is_string($valor) && ctype_digit($valor)
-        ? filter_var($valor, FILTER_VALIDATE_INT)
-        : false;
-    if ($entero === false || $entero < 1 || ($maximo !== null && $entero > $maximo)) {
-        error(400, "$nombre debe ser un entero positivo" . ($maximo === null ? '' : " no mayor que $maximo"));
-    }
-    return $entero;
 }
 
 /** GET /platos/{id} */
@@ -166,44 +116,6 @@ function sustituirPlato(PDO $pdo, int $id): never
     try {
         $consulta = $pdo->prepare('UPDATE platos SET nombre = ?, categoria = ?, precio = ?, disponible = ? WHERE id = ?');
         $consulta->execute([$p['nombre'], $p['categoria'], $p['precio'], (int) $p['disponible'], $id]);
-    } catch (PDOException $e) {
-        if ($e->getCode() === '23000') {
-            error(409, 'Ya existe un plato con ese nombre');
-        }
-        throw $e;
-    }
-
-    responder(200, buscarPlato($pdo, $id));
-}
-
-/** PATCH /platos/{id}: modifica solo los campos enviados. */
-function actualizarPlatoParcial(PDO $pdo, int $id): never
-{
-    $actual = buscarPlato($pdo, $id);
-    $entrada = leerJson();
-    $permitidos = ['nombre', 'categoria', 'precio', 'disponible'];
-    $cambios = array_intersect_key($entrada, array_flip($permitidos));
-
-    if (!$cambios) {
-        error(422, 'Envía al menos un campo válido para modificar', [
-            'errores' => ['plato' => 'No se recibieron campos modificables'],
-        ]);
-    }
-
-    $p = validarPlato(array_merge($actual, $cambios));
-    $asignaciones = [];
-    $valores = [];
-    foreach (array_keys($cambios) as $campo) {
-        $asignaciones[] = "$campo = ?";
-        $valores[] = $campo === 'disponible' ? (int) $p[$campo] : $p[$campo];
-    }
-    $valores[] = $id;
-
-    try {
-        $consulta = $pdo->prepare(
-            'UPDATE platos SET ' . implode(', ', $asignaciones) . ' WHERE id = ?'
-        );
-        $consulta->execute($valores);
     } catch (PDOException $e) {
         if ($e->getCode() === '23000') {
             error(409, 'Ya existe un plato con ese nombre');

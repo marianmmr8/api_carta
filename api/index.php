@@ -5,7 +5,6 @@ require 'conexion.php';
 require 'platos.php';
 
 $config = require 'config.php';
-configurarCors();
 
 // 1. ¿Qué piden? El método y la ruta, sin la carpeta donde está la API
 $metodo  = $_SERVER['REQUEST_METHOD'];                                  // GET, POST, PUT, DELETE…
@@ -15,25 +14,19 @@ $partes  = explode('/', trim(substr($camino, strlen($base)), '/'));     // ['pla
 $recurso = $partes[0];                                                  // 'platos'
 $id      = $partes[1] ?? null;                                          // '3' o null
 
-if ($metodo === 'OPTIONS') {
-    responder(204);
+// 2. Las operaciones que cambian datos (las «no seguras») exigen la clave
+if (!in_array($metodo, ['GET', 'HEAD', 'OPTIONS'], true)) {
+    exigirClave($config['clave_api']);
 }
 
-// 2. Reparto: cada ruta, a su función
+// 3. Reparto: cada ruta, a su función
 if ($recurso === '' || $recurso === 'index.php') {
     responder(200, ['api' => 'La carta de La Alacena', 'version' => '1.0']);
 }
 
+$pdo = conectar($config);
+
 if ($recurso === 'platos' && count($partes) === 1) {
-    if (!in_array($metodo, ['GET', 'POST'], true)) {
-        metodoNoPermitido('GET, POST');
-    }
-
-    if ($metodo === 'POST') {
-        exigirClave($config['claves_api'], 'cocina');
-    }
-
-    $pdo = conectar($config);
     match ($metodo) {
         'GET'   => listarPlatos($pdo),
         'POST'  => crearPlato($pdo, $base),
@@ -42,23 +35,11 @@ if ($recurso === 'platos' && count($partes) === 1) {
 }
 
 if ($recurso === 'platos' && count($partes) === 2 && ctype_digit($id)) {
-    if (!in_array($metodo, ['GET', 'PUT', 'PATCH', 'DELETE'], true)) {
-        metodoNoPermitido('GET, PUT, PATCH, DELETE');
-    }
-
-    if (in_array($metodo, ['PUT', 'PATCH'], true)) {
-        exigirClave($config['claves_api'], 'cocina');
-    } elseif ($metodo === 'DELETE') {
-        exigirClave($config['claves_api'], 'gerencia');
-    }
-
-    $pdo = conectar($config);
     match ($metodo) {
         'GET'    => verPlato($pdo, (int) $id),
         'PUT'    => sustituirPlato($pdo, (int) $id),
-        'PATCH'  => actualizarPlatoParcial($pdo, (int) $id),
         'DELETE' => borrarPlato($pdo, (int) $id),
-        default  => metodoNoPermitido('GET, PUT, PATCH, DELETE'),
+        default  => metodoNoPermitido('GET, PUT, DELETE'),
     };
 }
 
