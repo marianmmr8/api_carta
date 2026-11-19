@@ -3,7 +3,7 @@ info:
   title: La carta de La Alacena
   version: 1.0.0
   description: >-
-    API REST de la práctica guiada «La carta del restaurante» (IFCD0210 · UF1846).
+    API REST de la práctica guiada «La carta del restaurante».
     Gestiona los platos de la carta. Leer es público; crear, modificar y borrar
     exigen la clave de la API en la cabecera Authorization.
 servers:
