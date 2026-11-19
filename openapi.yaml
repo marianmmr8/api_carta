@@ -1,0 +1,234 @@
+openapi: 3.1.0
+info:
+  title: La carta de La Alacena
+  version: 1.0.0
+  description: >-
+    API REST de la práctica guiada «La carta del restaurante» (IFCD0210 · UF1846).
+    Gestiona los platos de la carta. Leer es público; crear, modificar y borrar
+    exigen la clave de la API en la cabecera Authorization.
+servers:
+  - url: http://localhost/api_carta/api
+    description: WAMP local
+tags:
+  - name: Platos
+paths:
+  /platos:
+    get:
+      tags: [Platos]
+      operationId: listarPlatos
+      summary: Lista de platos
+      security: []
+      parameters:
+        - name: categoria
+          in: query
+          description: Devuelve solo los platos de esta categoría
+          schema:
+            $ref: "#/components/schemas/Categoria"
+      responses:
+        "200":
+          description: Los platos, ordenados por id (la lista puede estar vacía)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Plato"
+        "400":
+          description: La categoría no es válida
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags: [Platos]
+      operationId: crearPlato
+      summary: Crea un plato
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlatoNuevo"
+      responses:
+        "201":
+          description: El plato creado
+          headers:
+            Location:
+              description: Dirección del plato nuevo
+              schema:
+                type: string
+                examples: [/carta/api/platos/10]
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plato"
+        "400":
+          description: El cuerpo no es un objeto JSON válido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          $ref: "#/components/responses/SinClave"
+        "409":
+          description: Ya existe un plato con ese nombre
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "422":
+          $ref: "#/components/responses/DatosNoValidos"
+  /platos/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Identificador del plato
+        schema:
+          type: integer
+          minimum: 1
+          examples: [3]
+    get:
+      tags: [Platos]
+      operationId: verPlato
+      summary: Un plato
+      security: []
+      responses:
+        "200":
+          description: El plato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plato"
+        "404":
+          $ref: "#/components/responses/NoExiste"
+    put:
+      tags: [Platos]
+      operationId: sustituirPlato
+      summary: Sustituye un plato
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlatoNuevo"
+      responses:
+        "200":
+          description: El plato, ya modificado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plato"
+        "400":
+          description: El cuerpo no es un objeto JSON válido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          $ref: "#/components/responses/SinClave"
+        "404":
+          $ref: "#/components/responses/NoExiste"
+        "409":
+          description: Ya existe otro plato con ese nombre
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "422":
+          $ref: "#/components/responses/DatosNoValidos"
+    delete:
+      tags: [Platos]
+      operationId: borrarPlato
+      summary: Borra un plato
+      responses:
+        "204":
+          description: Borrado; la respuesta no lleva cuerpo
+        "401":
+          $ref: "#/components/responses/SinClave"
+        "404":
+          $ref: "#/components/responses/NoExiste"
+security:
+  - claveApi: []
+components:
+  securitySchemes:
+    claveApi:
+      type: http
+      scheme: bearer
+      description: "La clave de la API: Authorization: Bearer <clave>"
+  schemas:
+    Categoria:
+      type: string
+      enum: [entrante, principal, postre]
+    PlatoNuevo:
+      type: object
+      required: [nombre, categoria, precio]
+      properties:
+        nombre:
+          type: string
+          minLength: 1
+          maxLength: 80
+          examples: [Gazpacho]
+        categoria:
+          $ref: "#/components/schemas/Categoria"
+        precio:
+          type: number
+          exclusiveMinimum: 0
+          exclusiveMaximum: 10000
+          examples: [6.5]
+        disponible:
+          type: boolean
+          default: true
+    Plato:
+      type: object
+      required: [id, nombre, categoria, precio, disponible]
+      properties:
+        id:
+          type: integer
+          examples: [3]
+        nombre:
+          type: string
+          examples: [Salmorejo]
+        categoria:
+          $ref: "#/components/schemas/Categoria"
+        precio:
+          type: number
+          examples: [6.5]
+        disponible:
+          type: boolean
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          examples: [No existe el plato 99]
+        errores:
+          type: object
+          description: Solo en las respuestas 422. Un mensaje por cada campo incorrecto
+          additionalProperties:
+            type: string
+  responses:
+    SinClave:
+      description: Falta la clave de la API o no es válida
+      headers:
+        WWW-Authenticate:
+          schema:
+            type: string
+            examples: [Bearer]
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NoExiste:
+      description: No existe un plato con ese id
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    DatosNoValidos:
+      description: Los datos no cumplen las reglas; `errores` indica cada campo incorrecto
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"

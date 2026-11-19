@@ -1,34 +1,39 @@
 {
   "info": {
     "name": "La carta de La Alacena",
-    "description": "Pruebas de la API. Ejecutar en orden; se crea un plato con nombre único y se elimina al terminar.",
+    "description": "Pruebas de la API de la práctica guiada «La carta del restaurante» (IFCD0210 · UF1846). Ejecuta la colección entera, en orden.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
       "name": "01 · Información de la API",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": "{{base}}/"
-      },
       "event": [
         {
           "listen": "test",
           "script": {
             "type": "text/javascript",
-            "exec": ["pm.test(\"Responde 200\", function () {", "    pm.response.to.have.status(200);", "});"]
+            "exec": [
+              "pm.test(\"Responde 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ]
           }
         }
-      ]
-    },
-    {
-      "name": "02 · Lista de platos",
+      ],
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{base}}/platos?pagina=2&por_pagina=5"
-      },
+        "url": {
+          "raw": "{{base}}/",
+          "host": [
+            "{{base}}"
+          ],
+          "path": []
+        }
+      }
+    },
+    {
+      "name": "02 · Lista de platos",
       "event": [
         {
           "listen": "test",
@@ -38,27 +43,31 @@
               "pm.test(\"Responde 200\", function () {",
               "    pm.response.to.have.status(200);",
               "});",
-              "pm.test(\"Devuelve una página de hasta 5 platos\", function () {",
+              "pm.test(\"Devuelve una lista con al menos 9 platos\", function () {",
               "    const platos = pm.response.json();",
               "    pm.expect(platos).to.be.an(\"array\");",
-              "    pm.expect(platos.length).to.be.at.most(5);",
-              "});",
-              "pm.test(\"X-Total cuenta los platos antes de paginar\", function () {",
-              "    pm.response.to.have.header(\"X-Total\");",
-              "    pm.expect(Number(pm.response.headers.get(\"X-Total\"))).to.be.at.least(9);",
+              "    pm.expect(platos.length).to.be.at.least(9);",
               "});"
             ]
           }
         }
-      ]
-    },
-    {
-      "name": "03 · Solo los postres",
+      ],
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{base}}/platos?categoria=postre&buscar=queso"
-      },
+        "url": {
+          "raw": "{{base}}/platos",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "platos"
+          ]
+        }
+      }
+    },
+    {
+      "name": "03 · Solo los postres",
       "event": [
         {
           "listen": "test",
@@ -71,38 +80,69 @@
               "pm.test(\"Todos son postres\", function () {",
               "    pm.response.json().forEach(function (plato) {",
               "        pm.expect(plato.categoria).to.eql(\"postre\");",
-              "        pm.expect(plato.nombre.toLowerCase()).to.include(\"queso\");",
               "    });",
               "});"
             ]
           }
         }
-      ]
-    },
-    {
-      "name": "04 · Categoría que no existe",
+      ],
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{base}}/platos?categoria=bebida"
-      },
+        "url": {
+          "raw": "{{base}}/platos?categoria=postre",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "platos"
+          ],
+          "query": [
+            {
+              "key": "categoria",
+              "value": "postre"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "04 · Categoría que no existe",
       "event": [
         {
           "listen": "test",
           "script": {
             "type": "text/javascript",
-            "exec": ["pm.test(\"Responde 400\", function () {", "    pm.response.to.have.status(400);", "});"]
+            "exec": [
+              "pm.test(\"Responde 400\", function () {",
+              "    pm.response.to.have.status(400);",
+              "});"
+            ]
           }
         }
-      ]
-    },
-    {
-      "name": "05 · Un plato",
+      ],
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{base}}/platos/3"
-      },
+        "url": {
+          "raw": "{{base}}/platos?categoria=bebida",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "platos"
+          ],
+          "query": [
+            {
+              "key": "categoria",
+              "value": "bebida"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "05 · Un plato",
       "event": [
         {
           "listen": "test",
@@ -121,55 +161,83 @@
             ]
           }
         }
-      ]
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base}}/platos/3",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "platos",
+            "3"
+          ]
+        }
+      }
     },
     {
       "name": "06 · Plato que no existe",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": "{{base}}/platos/9999"
-      },
       "event": [
         {
           "listen": "test",
           "script": {
             "type": "text/javascript",
-            "exec": ["pm.test(\"Responde 404\", function () {", "    pm.response.to.have.status(404);", "});"]
+            "exec": [
+              "pm.test(\"Responde 404\", function () {",
+              "    pm.response.to.have.status(404);",
+              "});"
+            ]
           }
         }
-      ]
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base}}/platos/9999",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "platos",
+            "9999"
+          ]
+        }
+      }
     },
     {
       "name": "07 · Ruta que no existe",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": "{{base}}/bebidas"
-      },
       "event": [
         {
           "listen": "test",
           "script": {
             "type": "text/javascript",
-            "exec": ["pm.test(\"Responde 404\", function () {", "    pm.response.to.have.status(404);", "});"]
+            "exec": [
+              "pm.test(\"Responde 404\", function () {",
+              "    pm.response.to.have.status(404);",
+              "});"
+            ]
           }
         }
-      ]
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base}}/bebidas",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "bebidas"
+          ]
+        }
+      }
     },
     {
       "name": "08 · Crear sin clave",
-      "request": {
-        "method": "POST",
-        "header": [{"key": "Content-Type", "value": "application/json"}],
-        "url": "{{base}}/platos",
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"nombre\": \"Gazpacho de prueba\",\n  \"categoria\": \"entrante\",\n  \"precio\": 6\n}",
-          "options": {"raw": {"language": "json"}}
-        },
-        "auth": {"type": "noauth"}
-      },
       "event": [
         {
           "listen": "test",
@@ -185,20 +253,40 @@
             ]
           }
         }
-      ]
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/platos",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "platos"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Gazpacho de prueba\",\n  \"categoria\": \"entrante\",\n  \"precio\": 6\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "auth": {
+          "type": "noauth"
+        }
+      }
     },
     {
       "name": "09 · Crear con datos no válidos",
-      "request": {
-        "method": "POST",
-        "header": [{"key": "Content-Type", "value": "application/json"}],
-        "url": "{{base}}/platos",
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"nombre\": \"Refresco\",\n  \"categoria\": \"bebida\",\n  \"precio\": 2\n}",
-          "options": {"raw": {"language": "json"}}
-        }
-      },
       "event": [
         {
           "listen": "test",
@@ -214,28 +302,38 @@
             ]
           }
         }
-      ]
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/platos",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "platos"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Refresco\",\n  \"categoria\": \"bebida\",\n  \"precio\": 2\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
     },
     {
       "name": "10 · Crear un plato",
-      "request": {
-        "method": "POST",
-        "header": [{"key": "Content-Type", "value": "application/json"}],
-        "url": "{{base}}/platos",
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"nombre\": \"{{nombreNuevo}}\",\n  \"categoria\": \"entrante\",\n  \"precio\": 6\n}",
-          "options": {"raw": {"language": "json"}}
-        }
-      },
       "event": [
-        {
-          "listen": "prerequest",
-          "script": {
-            "type": "text/javascript",
-            "exec": ["pm.collectionVariables.set(\"nombreNuevo\", \"Gazpacho de prueba \" + pm.variables.replaceIn(\"{{$guid}}\"));"]
-          }
-        },
         {
           "listen": "test",
           "script": {
@@ -248,47 +346,85 @@
               "    const plato = pm.response.json();",
               "    pm.expect(plato.id).to.be.a(\"number\");",
               "    pm.response.to.have.header(\"Location\");",
-              "    pm.collectionVariables.set(\"idNuevo\", plato.id);",
+              "    pm.collectionVariables.set(\"idNuevo\", plato.id);   // lo usan las peticiones siguientes",
               "});"
             ]
           }
         }
-      ]
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/platos",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "platos"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Gazpacho de prueba\",\n  \"categoria\": \"entrante\",\n  \"precio\": 6\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
     },
     {
       "name": "11 · Crear un plato repetido",
-      "request": {
-        "method": "POST",
-        "header": [{"key": "Content-Type", "value": "application/json"}],
-        "url": "{{base}}/platos",
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"nombre\": \"{{nombreNuevo}}\",\n  \"categoria\": \"entrante\",\n  \"precio\": 6\n}",
-          "options": {"raw": {"language": "json"}}
-        }
-      },
       "event": [
         {
           "listen": "test",
           "script": {
             "type": "text/javascript",
-            "exec": ["pm.test(\"Responde 409\", function () {", "    pm.response.to.have.status(409);", "});"]
+            "exec": [
+              "pm.test(\"Responde 409\", function () {",
+              "    pm.response.to.have.status(409);",
+              "});"
+            ]
           }
         }
-      ]
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/platos",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "platos"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Gazpacho de prueba\",\n  \"categoria\": \"entrante\",\n  \"precio\": 6\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
     },
     {
       "name": "12 · Modificar el plato",
-      "request": {
-        "method": "PUT",
-        "header": [{"key": "Content-Type", "value": "application/json"}],
-        "url": "{{base}}/platos/{{idNuevo}}",
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"nombre\": \"{{nombreNuevo}}\",\n  \"categoria\": \"entrante\",\n  \"precio\": 6.5,\n  \"disponible\": true\n}",
-          "options": {"raw": {"language": "json"}}
-        }
-      },
       "event": [
         {
           "listen": "test",
@@ -304,127 +440,199 @@
             ]
           }
         }
-      ]
-    },
-    {
-      "name": "13 · Cambiar solo la disponibilidad",
+      ],
       "request": {
-        "method": "PATCH",
-        "header": [{"key": "Content-Type", "value": "application/json"}],
-        "url": "{{base}}/platos/{{idNuevo}}",
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/platos/{{idNuevo}}",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "platos",
+            "{{idNuevo}}"
+          ]
+        },
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"disponible\": false\n}",
-          "options": {"raw": {"language": "json"}}
+          "raw": "{\n  \"nombre\": \"Gazpacho de prueba\",\n  \"categoria\": \"entrante\",\n  \"precio\": 6.5,\n  \"disponible\": false\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
         }
-      },
+      }
+    },
+    {
+      "name": "13 · Método no permitido",
       "event": [
         {
           "listen": "test",
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test(\"Responde 200\", function () {",
-              "    pm.response.to.have.status(200);",
+              "pm.test(\"Responde 405\", function () {",
+              "    pm.response.to.have.status(405);",
               "});",
-              "pm.test(\"Solo cambia la disponibilidad\", function () {",
-              "    const plato = pm.response.json();",
-              "    pm.expect(plato.disponible).to.eql(false);",
-              "    pm.expect(plato.precio).to.eql(6.5);",
-              "    pm.expect(plato.nombre).to.eql(pm.collectionVariables.get(\"nombreNuevo\"));",
+              "pm.test(\"Dice qué métodos admite\", function () {",
+              "    pm.response.to.have.header(\"Allow\");",
               "});"
             ]
           }
         }
-      ]
-    },
-    {
-      "name": "14 · Borrar sin clave",
-      "request": {
-        "method": "DELETE",
-        "header": [],
-        "url": "{{base}}/platos/{{idNuevo}}",
-        "auth": {"type": "noauth"}
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": ["pm.test(\"Responde 401\", function () {", "    pm.response.to.have.status(401);", "});"]
-          }
-        }
-      ]
-    },
-    {
-      "name": "15 · Borrar con clave de cocina",
-      "request": {
-        "method": "DELETE",
-        "header": [],
-        "url": "{{base}}/platos/{{idNuevo}}"
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": ["pm.test(\"Responde 403\", function () {", "    pm.response.to.have.status(403);", "});"]
-          }
-        }
-      ]
-    },
-    {
-      "name": "16 · Borrar con clave de gerencia",
-      "request": {
-        "method": "DELETE",
-        "header": [],
-        "url": "{{base}}/platos/{{idNuevo}}"
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": ["pm.test(\"Responde 204\", function () {", "    pm.response.to.have.status(204);", "});"]
-          }
-        }
       ],
-      "auth": {
-        "type": "bearer",
-        "bearer": [{"key": "token", "value": "{{claveGerencia}}", "type": "string"}]
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/platos/{{idNuevo}}",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "platos",
+            "{{idNuevo}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"precio\": 7\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
       }
     },
     {
-      "name": "17 · Borrar un plato que ya no existe",
-      "request": {
-        "method": "DELETE",
-        "header": [],
-        "url": "{{base}}/platos/{{idNuevo}}",
-        "auth": {
-          "type": "bearer",
-          "bearer": [{"key": "token", "value": "{{claveGerencia}}", "type": "string"}]
-        }
-      },
+      "name": "14 · Borrar sin clave",
       "event": [
         {
           "listen": "test",
           "script": {
             "type": "text/javascript",
-            "exec": ["pm.test(\"Responde 404\", function () {", "    pm.response.to.have.status(404);", "});"]
+            "exec": [
+              "pm.test(\"Responde 401\", function () {",
+              "    pm.response.to.have.status(401);",
+              "});"
+            ]
           }
         }
-      ]
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base}}/platos/{{idNuevo}}",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "platos",
+            "{{idNuevo}}"
+          ]
+        },
+        "auth": {
+          "type": "noauth"
+        }
+      }
+    },
+    {
+      "name": "15 · Borrar el plato",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Responde 204\", function () {",
+              "    pm.response.to.have.status(204);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base}}/platos/{{idNuevo}}",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "platos",
+            "{{idNuevo}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "16 · Borrar un plato que ya no existe",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Responde 404\", function () {",
+              "    pm.response.to.have.status(404);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base}}/platos/{{idNuevo}}",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "platos",
+            "{{idNuevo}}"
+          ]
+        }
+      }
     }
   ],
   "auth": {
     "type": "bearer",
-    "bearer": [{"key": "token", "value": "{{claveCocina}}", "type": "string"}]
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{clave}}",
+        "type": "string"
+      }
+    ]
   },
   "variable": [
-    {"key": "base", "value": "http://localhost/api_carta/api"},
-    {"key": "claveCocina", "value": "alacena-8f3c1d7a52e94b06"},
-    {"key": "claveGerencia", "value": "11f4a7eeff38edc85845ceadfb78fba7ea466d3d8e4cd540598e0d89fdcb0d97"},
-    {"key": "idNuevo", "value": ""},
-    {"key": "nombreNuevo", "value": ""}
+    {
+      "key": "base",
+      "value": "http://localhost/api_carta/api"
+    },
+    {
+      "key": "clave",
+      "value": "alacena-8f3c1d7a52e94b06"
+    },
+    {
+      "key": "idNuevo",
+      "value": ""
+    }
   ]
 }

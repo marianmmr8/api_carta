@@ -1,2 +1,3 @@
+CGIPassAuth On
 SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
 FallbackResource /api_carta/api/index.php
