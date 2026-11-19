@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carta de la alacena</title>
+    <style>
+        body {
+            font-family: Georgia, 'Times New Roman', serif;
+            background-color: #f6f1e7;
+            color: #2c241e;
+            margin: 0;
+            padding: 2rem 1rem;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.2rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+            color: #5a2d18;
+        }
+        .carta {
+            max-width: 720px;
+            margin: 0 auto;
+            background-color: #fffdf8;
+            border: 1px solid #dfd4c1;
+            box-shadow: 0 8px 24px rgba(44, 36, 30, 0.08);
+            padding: 2.5rem 2rem;
+        }
+        .categoria + .categoria {
+            margin-top: 2rem;
+        }
+        .categoria h2 {
+            font-size: 1.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #5a2d18;
+            border-bottom: 1px solid #c9b79c;
+            padding-bottom: 0.4rem;
+            margin-bottom: 1rem;
+        }
+        .lista-platos {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .plato {
+            display: flex;
+            align-items: baseline;
+            gap: 0.6rem;
+            padding: 0.45rem 0;
+            font-size: 1.05rem;
+        }
+        .plato-linea {
+            flex: 1;
+            border-bottom: 1px dotted #b9a78c;
+        }
+        .plato-precio {
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        .plato.agotado {
+            color: #8c8277;
+            font-style: italic;
+        }
+        .plato.agotado .plato-nombre {
+            text-decoration: line-through;
+        }
+        .error {
+            text-align: center;
+            color: #8b261d;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Carta de la Alacena</h1>
+    <div class="carta" id="carta"></div>
+
+    <script src="js/funciones.js"></script>
+
+</body>
+
+</html>
